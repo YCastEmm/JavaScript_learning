@@ -1,0 +1,40 @@
+body{
+
+    font-family: Verdana;
+    font-size: 18px;
+    color: rgb(83, 83, 83);
+
+}
+
+.calculadora{
+    max-width: 70%;
+    height: 300px;
+    margin: auto;
+}
+
+
+.calculadora form label{
+    text-align: left;
+    display: block;
+}
+
+.calculadora form input{
+    display: block;
+    width: 90%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border: 1px solid rgb(194, 194, 194);
+    border-radius: 4px;
+}
+
+.calculadora form button{
+    background-color: rgb(57, 143, 255);
+    margin-top: 8px 0;
+    width: 97%;
+    height: 40px;
+    font-size: 18px;
+    border: 1px solid rgb(194, 194, 194);
+    color: #ffffff;
+    border-radius: 4px;
+}
+
