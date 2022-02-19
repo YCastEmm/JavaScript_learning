@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+
+        let edadUsuario = prompt("Ingrese su edad")
+        let edadConvertida = Number(edadUsuario)
+
+        if (edadConvertida > 0) {
+            
+        
+            if (edadConvertida < 16){
+                console.log("No podés votar")
+
+            } else if (edadConvertida == 16) {
+                    console.log("Podés votar pero no es obligatorio")
+            
+            } else if (edadConvertida == 17) {
+                console.log("Podés votar pero no es obligatorio")
+                            
+            } else if (edadConvertida >= 65) { //Queda dentro del primer IF, entonces el 18 lo mando al final.
+                        console.log("Podés votar pero no es obligatorio")
+
+            } else if (edadConvertida >= 18) {
+                console.log("Debés votar")
+            }
+
+        } else {
+            console.log("Ingresá un valor mayor que 0")
+
+        }    
+
+
+
+    </script>
+</body>
+</html>

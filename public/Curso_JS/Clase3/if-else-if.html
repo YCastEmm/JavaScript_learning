@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <script>
+
+        /*Solicitar al usuario su edad y determinar cual corresponde:
+        • Si es menor de 17, no puede sacar el registro
+        • Si tiene 17 o más, puede sacarlo con el permiso de sus padres
+        • Si tiene 18 o más, puede sacarlo por su cuente
+        .*/
+
+        let edadIngresada = prompt("ingrese su edad")
+        let edadConvertido =Number(edadIngresada)
+
+        if (edadConvertido < 17) {
+            //Segmento de código
+            console.log("No podés sacarlo")
+            
+        } else if (edadConvertido == 17) {
+
+            console.log("Lo podés sacar con el permiso de tus padres")
+
+        } else if (edadConvertido >= 18) {
+
+            console.log("Lo podés sacar")
+
+        }
+        
+
+    </script>
+
+</body>
+</html>
