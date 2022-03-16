@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio IF</title>
+</head>
+
+<body>
+
+    <h1 id="titulo">Ejercicio IF</h1>
+
+    <script>
+        
+        let numero1 = parseInt(prompt("Ingrese el primer número"))
+        let numero2 = parseInt(prompt("Ingrese el primer número"))
+        let numero3 = parseInt(prompt("Ingrese el primer número"))
+        var contenido = document.getElementById("titulo").innerText //guardo el contenido del título
+
+
+        if (numero1 == numero2 | numero1 == numero3 | numero2 == numero3) {
+            alert("No ingrese dos números iguales")
+            document.getElementById("titulo").innerText = contenido + ": No ingrese dos números iguales"
+        } else {
+            if (numero1 > numero2 & numero1 > numero3) {
+                alert("El numero más alto es " + numero1)
+                document.getElementById("titulo").innerText = contenido + ": El numero más alto es " + numero1
+            }
+
+            if (numero2 > numero1 & numero2 > numero3) {
+                alert("El numero más alto es " + numero2)
+                document.getElementById("titulo").innerText = contenido + ": El numero más alto es " + numero2
+            }
+
+            if (numero3 > numero1 & numero3 > numero2) {
+                alert("El numero más alto es " + numero3)
+                document.getElementById("titulo").innerText = contenido + ": El numero más alto es " + numero3
+            }
+        }
+
+
+
+
+        
+
+    </script>    
+
+</body>
+</html>

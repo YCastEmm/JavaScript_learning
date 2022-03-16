@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio IF</title>
+</head>
+
+<body>
+
+    <h1 id="titulo">Ejercicio IF: Nota de parcial</h1>
+
+    <script>
+        
+        let notaDeParcial = parseInt(prompt("Ingrese el primer número"))
+
+        if (notaDeParcial >= 0 & notaDeParcial <=10) {
+            if (notaDeParcial < 4) {
+            alert("Desaprobado")
+            document.getElementById("titulo").innerHTML = "Desaprobado"
+            } else { 
+                if (notaDeParcial >= 4 & notaDeParcial < 7) {
+                    alert("Aprobado")
+                    document.getElementById("titulo").innerText = "Aprobado"
+                } else {
+                    alert("Promocionado")
+                    document.getElementById("titulo").innerText = "Promocionado"
+                }
+            }
+        } else {
+            alert("Ingrese una nota correcta")
+        }
+        
+    </script>    
+
+</body>
+</html>
