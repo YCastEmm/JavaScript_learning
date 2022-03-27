@@ -13,18 +13,25 @@
 <body>
 
     <div class="calculadora">
+        <p>Con la siguiente calculadora podés conocer la cantidad de discos necesarios en función de los días de grabación deseados y las cámaras a instalar.
+            <br>
+            También es posible calcular los días de grabación posibles en base a los discos y cámaras a instalar, o bien, saber la cantidad de cámaras que se pueden colocar, dada una cantidad de discos y los días de grabación.
+            <br>
+            <br>
+            Simplemente completá dos campos para calcular el tercero.
+        </p>
+
         <form action="" id="calculadora" method="get">
             <label for="">Cantidad de cámaras</label>
             <input type="number" id="nCamaras">
             
-
             <label for="">Días de grabación</label>
             <input type="number" id="diasGrabacion">
 
-            <label for="">Capacidad de disco</label>
+            <label for="">Cantidad de discos</label>
             <input type="number" id="hdd">
 
-            <button onclick="calcular();">Calcular</button>
+            <button type="button" onclick="calcular();">Calcular</button>
 
         </form>
     </div>
