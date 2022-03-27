@@ -1,0 +1,724 @@
+if( sk_running == undefined ) { var sk_running = false; }
+
+var sk_survey = {};
+
+( function( window ) 
+{ 
+    'use strict';
+var d;
+var headElements = document.getElementsByTagName( "head" ); 
+var head = headElements[0];
+
+var bodyElems = document.getElementsByTagName( "body" ); 
+var body = bodyElems[0];
+
+var j = document.getElementsByTagName('script'); 
+for (var i = 0; i < j.length; i++) 
+{ 
+    var p = /script.js/i;
+    if (p.test(j[i].getAttribute('src')))
+    {
+        //d = j[i].getAttribute('src').replace('/assets/scripts/embedded/v1.2/script.js','');
+        d = 'https://surveykiwi.com/';
+    }
+}
+
+if (!sk_survey.onSubmitCampaign)
+{
+    sk_survey = {
+        reload: function() {
+            sk_ready(function() {
+                loop_makers ( document.querySelectorAll('.sk_survey:not(.sk_survey_loaded)') );
+            });
+        },
+        show: function( settings,components ) 
+        {
+            div_modal_show_styles ( settings, components );
+            fadeIn (components.div_bg, 300, 10);
+            fadeIn (components._spinner, 300, settings.interval );
+            fadeIn (components._close, 300, settings.interval + 300);
+            settings.temp_body_overflow = body.style.overflow;
+            body.style.overflow = 'hidden';
+        },
+        hide: function hide( settings,components ) 
+        {
+            _init_modal_styles ( settings,components );
+            fadeOut(components._close, 0, 0);
+            fadeOut(components.div_bg, 300, settings.interval + 300);
+
+            setTimeout(function() 
+            {
+                components.div_bg.style.display = 'none';
+                components.div_modal.style.display = 'none';
+                components.div_modal_content.style.display = 'none';
+                components._frame.style.display = 'none';
+                components._close.style.display = 'none';
+
+                var _all_modals = document.querySelectorAll('[data-target="_sk_modal"]');
+                var _all_modals_bg = document.querySelectorAll('[data-target="_sk_bg_modal"]');
+
+                for( var i = 0 ; i < _all_modals.length ; i++){
+                    _all_modals[i].parentNode.removeChild(_all_modals[i]);
+                }
+                for( var i = 0 ; i < _all_modals_bg.length ; i++){
+                    _all_modals_bg[i].parentNode.removeChild(_all_modals_bg[i]);
+                }
+            }, settings.interval + 600)
+
+            body.style.overflow = settings.temp_body_overflow;
+        },
+        onSubmitCampaign: function(data){}
+    };
+}
+
+// Create IE + others compatible event handler
+var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == 'attachEvent' ? 'onmessage' : 'message';
+
+var events = ['message', 'response', 'submit_response'];
+
+var _close, settings, div_bg, div_modal, div_modal_content, _frame, _spinner;
+
+// Listen to message from child window
+
+eventer(messageEvent,function(e) 
+{
+    //if (d.indexOf(e.origin) !== -1)
+    //{
+        try
+        {
+            var key = e.message ? "message" : "data";
+            var data = e[key];
+                data = JSON.parse(data);
+
+            if (events.indexOf(data.event) !== -1)
+            {
+                if (data.event === 'message') 
+                { 
+                    sk_survey.show();
+                }
+                else if (data.event === 'response') 
+                { 
+                    sk_survey.hide();
+                } 
+                else if (data.event === 'submit_response') 
+                { 
+                    sk_survey.onSubmitCampaign(data);
+                } 
+                else
+                {
+                    console.dir('else');
+                }
+            } 
+        }
+        catch (e) 
+        {
+
+        }
+    //}
+}, false);
+
+function sk_ready(f){
+    document.readyState !== 'complete' ? setTimeout(sk_ready,9,f) : f();
+}
+
+sk_ready(function()
+{
+    if( sk_running === false ) 
+    {
+        sk_running = true;
+
+        var _makers = document.querySelectorAll('.sk_survey');
+
+        loop_makers ( _makers );
+
+        if (window.skAsyncInit)
+        {
+            window.skAsyncInit();
+        }
+    }
+});
+
+function loop_makers ( show_makers ) {
+
+	for(var i=0;i<show_makers.length;++i) {
+
+		var maker = show_makers[i];
+        var _position = ( maker.getAttribute('data-position') ) ? maker.getAttribute('data-position') : false;
+
+            maker.settings = get_settings ( i, maker);  
+                        
+		if( maker.settings.position && !maker.settings.widget ) {
+                    
+                    if ( ! is_ios() ) {
+
+                        maker.addEventListener('click',function( event ){
+                            
+                            var settings = get_settings ( i, this);
+
+                            this.settings = settings;  
+                            
+                            var components = construct_modal ( settings );
+                            
+                            this.c = components;
+                            
+                            sk_survey.show ( this.settings, this.c );
+                            event.preventDefault();
+                            event.stopPropagation();
+                            window.event.returnValue = false; 
+                            return false;
+
+                        },false);
+
+                    } else {
+                        maker.target = '_blank';
+                        maker.href = maker.getAttribute('data-href');
+                    }
+
+		} else {
+                    
+                    if ( is_ios() ) 
+                    {
+                        maker.settings.src = maker.settings.src + ( (maker.settings.src.includes('?')) ? '&banner=true' : '?banner=true' );
+                    }
+                        
+                    var components = construct_widget ( maker );
+
+                    maker.c = components;
+                
+		}
+                
+        if ( (" " + maker.className + " ").replace(/[\n\t]/g, " ").indexOf(" default_style ") > -1 ) {
+            default_style_makers (maker);
+        }
+	
+		if( i == 0 ) {
+			first_loop ();
+		}
+
+        maker.classList.add('sk_survey_loaded');
+	}
+
+}
+
+function is_ios () {
+    var standalone = window.navigator.standalone,
+    userAgent = window.navigator.userAgent.toLowerCase(),
+    safari = window.safari !== undefined,
+    ios = /iphone|ipod|ipad/.test( userAgent );
+
+    //safari = /safari/.test( userAgent ),
+    
+    if( safari )
+    {
+        return true;
+    } 
+    else 
+    {
+        var safari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+            navigator.userAgent &&
+            navigator.userAgent.indexOf('CriOS') == -1 &&
+            navigator.userAgent.indexOf('FxiOS') == -1;
+        
+        if (safari || ios)
+        {
+            return true;
+        }
+        else
+        {
+            return false;   
+        }
+    }
+}
+
+function first_loop () {
+    var font = document.createElement('link');
+        font.href = '//fonts.googleapis.com/css?family=Roboto:100,300';
+        font.rel = 'stylesheet';
+        font.type = 'text/css';
+
+    // var styles = document.createElement('style');
+    // 	styles.innerHTML = ".kw_scroll_touch { -webkit-overflow-scrolling: touch !important;overflow-y: auto; position: relative; display: block; }";
+
+    head.appendChild(font);
+    // head.appendChild(styles);
+}
+
+function get_settings ( i, maker ) {
+
+	var settings = {};
+    settings.btn = {};
+        
+	settings.id = i;
+	// Parametros personalizables:
+	settings.src = ( maker.getAttribute('data-href') ) ? maker.getAttribute('data-href') : false;
+    if (!settings.src) {
+        settings.src = ( maker.getAttribute('href') ) ? maker.getAttribute('href') : false;
+    }
+    
+	settings.btn.showLogo = ( maker.getAttribute('data-btn-logo') ) ? maker.getAttribute('data-btn-logo') : true;
+	settings.btn.backgroundColor = ( maker.getAttribute('data-btn-background-color') ) ? maker.getAttribute('data-btn-background-color') : 'rgb(26, 188, 156)';
+	settings.btn.textColor = ( maker.getAttribute('data-btn-text-color') ) ? maker.getAttribute('data-btn-text-color') : '#ffffff';
+	settings.margin = ( maker.getAttribute('data-margin') ) ? maker.getAttribute('data-margin') : false;
+	settings.width = ( maker.getAttribute('data-width') ) ? maker.getAttribute('data-width') : false;
+	settings.height = ( maker.getAttribute('data-height') ) ? maker.getAttribute('data-height') : false;
+	settings.position = ( maker.getAttribute('data-position') ) ? maker.getAttribute('data-position') : false;
+	settings.interval = ( maker.getAttribute('data-interval') ) ? parseFloat(maker.getAttribute('data-interval')) : 500;
+	settings.backgroundcolor = ( maker.getAttribute('data-backgroundcolor') ) ? maker.getAttribute('data-backgroundcolor') : '#111111';
+    settings.widget = false;
+    
+    if (!settings.position) {
+        settings.widget = true;
+    }
+	
+	settings.close_width = 20;
+
+	if ( body.clientWidth < 680 ) { 
+		if( settings.position == 'vertical-left' ) {
+            settings.position = 'mobile-left';
+		} else {
+            settings.position = 'mobile';
+        }
+	}
+        
+	switch( settings.position ) {
+	    case 'vertical':
+	    case 'vertical-left':
+	    case 'vertical-right':
+            settings.width = ( settings.width ) ? settings.width : '60%';
+            settings.height = ( settings.height ) ? settings.height : '100%';
+            settings.margin = ( settings.margin ) ? settings.margin : '0';
+        break;
+	    case 'horizontal':
+	    case 'horizontal-top':
+	    case 'horizontal-bottom':
+            settings.width = ( settings.width ) ? settings.width : '100%';
+            settings.height = ( settings.height ) ? settings.height : '60%';
+            settings.margin = '0';
+        break;
+	    case 'full':
+            settings.width = ( settings.width ) ? settings.width : '90%';
+            settings.height = ( settings.height ) ? settings.height : '80%';
+            settings.margin = ( settings.margin ) ? settings.margin : '5% auto';
+        break;
+	    case 'mobile':
+	    case 'mobile-left':
+            settings.width = ( settings.width ) ? settings.width : '100%';
+            if (settings.widget) {
+                settings.height = ( settings.height ) ? settings.height : '480px';
+                settings.src = ( maker.getAttribute('data-src') ) ? maker.getAttribute('data-src') : false;
+            } else {
+                settings.height = ( settings.height ) ? settings.height : 'calc(100% - 40px)';
+                settings.margin = '40px 0 0 0';
+                settings.close_width = 20;
+            }
+        break;
+    	default:
+            settings.width = ( settings.width ) ? settings.width : '100%';
+            settings.height = ( settings.height ) ? settings.height : '480px';
+            settings.src = ( maker.getAttribute('data-src') ) ? maker.getAttribute('data-src') : false;
+    	break;
+	}
+
+	return settings;
+		
+}
+function construct_modal ( settings ) {
+    
+	var components = {};
+
+	components.div_bg = document.createElement("div");
+    components.div_bg.style.background = 'rgba(0,0,0,0.8)';
+    components.div_bg.style.zIndex = '1000000';
+    components.div_bg.style.position = 'fixed';
+    components.div_bg.style.top = 0;
+    components.div_bg.style.bottom = 0;
+    components.div_bg.style.right = 0;
+    components.div_bg.style.left = 0;
+    components.div_bg.style.opacity = 0;
+    components.div_bg.setAttribute('data-target', '_sk_bg_modal');
+
+	components.div_modal = document.createElement("div");
+    components.div_modal.style.position = 'fixed';
+    components.div_modal.style.top = 0;
+    components.div_modal.style.right = 0;
+    components.div_modal.style.bottom = 0;
+    components.div_modal.style.left = 0;
+    components.div_modal.style.zIndex = '1000001';
+    components.div_modal.style.overflow = 'hidden';
+    components.div_modal.setAttribute('data-id', settings.id);
+    components.div_modal.setAttribute('data-target', '_sk_modal');
+
+	components.div_modal_content = document.createElement("div");
+    components.div_modal_content.style.margin = settings.margin; 
+    components.div_modal_content.style.width = settings.width;
+    components.div_modal_content.style.height = settings.height;
+    components.div_modal_content.style.backgroundColor = settings.backgroundcolor;
+    components.div_modal_content.style.color = 'white';
+    components.div_modal_content.id = 'sk'+'_div_modal_content'+settings.id;
+	
+	var colorspinner = ( settings.backgroundcolor == 'white' || settings.backgroundcolor == '#fff' || settings.backgroundcolor == '#ffffff') ? 'rgba(0,0,0,.6)' : 'rgba(255,255,255,.6)';
+
+  	components._spinner = document.createElement("div");
+        components._spinner.innerHTML = '<svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;position: absolute;top: 49%; xml:space="preserve">\
+<path fill="'+colorspinner+'" d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z">\
+<animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur=".6s" repeatCount="indefinite"></animateTransform>\
+</path>\
+</svg>';
+        components._spinner.style.position = 'absolute';
+        components._spinner.style.height = settings.height;
+        components._spinner.style.width = settings.width;
+        components._spinner.style.textAlign = 'center';
+        components._spinner.style.opacity = '0';
+        components._spinner.style.zIndex = '1000002';
+
+
+	    components.img_close = document.createElement("img");
+        components.img_close.src = d +'/assets/images/embedded/close.png';
+        components.img_close.style.width = settings.close_width+'px';
+        components.img_close.style.paddingTop = '4px';
+        components.img_close.style.margin = '0 auto';
+
+	    components._close = document.createElement("div");
+        components._close.style.color = 'white';
+        components._close.style.zIndex = '1000004';
+        components._close.style.textShadow = '0px 0px 3px black';
+        components._close.style.position = 'absolute';
+        components._close.style.opacity = '0';
+        components._close.style.cursor = 'pointer';
+        components._close.style.padding = '0';
+        components._close.style.backgroundColor = '#666666';
+        components._close.style.borderRadius = '100%';
+        components._close.style.width = '30px';
+        components._close.style.height = '30px';
+        components._close.style.textAlign = 'center';
+        components._close.setAttribute('data-id', settings.id);
+
+        components._frame = document.createElement('iframe');
+        components._frame.name ='ddmb001';
+        components._frame.scrolling ='yes';
+        components._frame.style.border ='none';
+        components._frame.borderWidth = 0;
+        components._frame.setAttribute('frameborder', 0);
+        components._frame.style.overflow ='auto';
+        components._frame.style.width = settings.width;
+        components._frame.style.height = settings.height;
+        components._frame.style.zIndex = '1000003';
+        components._frame.style.position = 'absolute';
+        components._frame.src = settings.src;
+        
+	var bodyElems = document.getElementsByTagName( "body" ); 
+  	var body = bodyElems[0];
+        
+  	components.div_modal_content.appendChild(components._close);
+  	components._close.appendChild(components.img_close);
+
+	components.div_modal_content.appendChild(components._spinner);
+  	components.div_modal_content.appendChild(components._frame);
+  	components.div_modal.appendChild(components.div_modal_content);
+        
+  	body.appendChild(components.div_modal);
+  	body.appendChild(components.div_bg);
+
+	_init_modal_styles ( settings, components );
+
+  	components.div_bg.style.display ='none';
+	components.div_modal.style.display ='none';
+	components.div_modal_content.style.display ='none';
+
+	components._close.addEventListener('click', function() 
+        {
+		sk_survey.hide ( settings, components );
+	});
+
+	components.div_modal.addEventListener('click', function() 
+        {
+		sk_survey.hide ( settings, components );
+	});
+
+	return components;
+}
+
+function construct_widget ( maker ) {
+
+        var components = {};
+
+        components._frame = document.createElement('iframe');
+        components._frame.name ='ddmb001';
+        components._frame.scrolling ='yes';
+        components._frame.style.border ='none';
+        components._frame.borderWidth = 0;
+        components._frame.setAttribute('frameborder', 0);
+        components._frame.style.overflow ='auto';
+        components._frame.style.width = '100%';
+        components._frame.style.height = '100%';
+        components._frame.style.position = 'relative';
+        components._frame.style.zIndex = '2';
+        components._frame.src = maker.settings.src;
+
+	var colorspinner = (maker.settings.backgroundcolor == 'white' || maker.settings.backgroundcolor == '#fff' || maker.settings.backgroundcolor == '#ffffff') ? 'rgba(0,0,0,.6)' : 'rgba(255,255,255,.6)';
+
+	components._spinner = document.createElement("div");
+        components._spinner.innerHTML = '<svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;position: absolute;top: 48%; xml:space="preserve">\
+  <path fill="'+colorspinner+'" d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z">\
+    <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur=".6s" repeatCount="indefinite"></animateTransform>\
+    </path>\
+  </svg>';
+        components._spinner.style.position = 'absolute';
+        components._spinner.style.height = '100%';
+        components._spinner.style.width = '100%';
+        components._spinner.style.textAlign = 'center';
+        components._spinner.style.zIndex = '1';
+        components._spinner.style.left = '0';
+        components._spinner.style.top = '0';
+
+
+	maker.style.width = maker.settings.width;
+	maker.style.height = maker.settings.height;
+	maker.style.backgroundColor = maker.settings.backgroundcolor;
+	maker.style.color = 'white';
+	maker.style.position = 'relative';
+	maker.style.display = 'block';
+	maker.style.padding = '0';
+
+	maker.appendChild(components._frame);
+	maker.appendChild(components._spinner);
+
+	return components;
+}
+
+function fadeIn (element, interval , delay) 
+{
+    element.style.transition = 'opacity '+interval+'ms';
+    element.style.display = 'block';
+    setTimeout(function() 
+    {
+        element.style.opacity = '1';
+    }, delay);
+}
+
+function fadeOut (element, interval , delay) 
+{
+    element.style.transition = 'opacity '+interval+'ms';
+    setTimeout(function() 
+    {
+        element.style.opacity = '0';
+    }, delay);
+}
+
+function _init_modal_styles ( settings, components ) 
+{
+
+	switch( settings.position ) {
+	    case 'vertical':
+	    case 'vertical-left':
+	    		components.div_modal_content.style.marginLeft = -components.div_modal_content.offsetWidth+'px';
+	        break;
+	    case 'vertical-right':
+	    		components.div_modal_content.style.margin = '0px ' + (-components.div_modal_content.offsetWidth) +'px 0px auto';
+	        break;
+	    case 'horizontal':
+	    case 'horizontal-top':
+	    		components.div_modal_content.style.marginTop = -components.div_modal_content.offsetHeight+'px';
+	    	break;
+	    case 'horizontal-bottom':
+	    		components.div_modal_content.style.marginBottom = -components.div_modal_content.offsetHeight+'px';
+	    	break;
+	    case 'mobile':
+	    		components._close.style.marginTop = '-32px';
+	    		components._close.style.right = '10px';
+
+	    		components.div_modal_content.style.marginTop = '40px';
+	    		components.div_modal_content.style.marginLeft = components.div_modal_content.offsetWidth+'px';
+	    	break;
+	    case 'mobile-left':
+	    	    components._close.style.marginTop = '-32px';
+	    		components._close.style.right = '10px';
+
+	    		components.div_modal_content.style.marginTop = '40px';
+	    		components.div_modal_content.style.marginLeft = -components.div_modal_content.offsetWidth+'px';
+	    	break;
+	    default:
+				components.div_modal_content.style.margin = settings.margin;
+	    		components.div_modal_content.style.marginTop = -components.div_modal_content.offsetHeight+'px';
+
+	    		components._close.style.marginTop = '20px';
+	    		components._close.style.right = '30px';
+	    	break;
+	}
+
+
+}
+function div_modal_show_styles ( settings, components ) 
+{	
+
+	components._frame.style.display ='block';
+
+	components.div_modal.style.display ='block';
+	components.div_modal_content.style.display ='block';
+
+	setTimeout(function() {
+		components.div_modal_content.style.transition = 'margin '+settings.interval+'ms';
+		switch( settings.position ) {
+		    case 'vertical':
+		    case 'vertical-left':
+		    		//components.div_modal_content.style.marginLeft = 0;
+		    		components.div_modal_content.style.marginLeft = settings.margin;
+
+			    	components._close.style.marginTop = '10px';
+		    		//components._close.style.marginLeft = (components.div_modal_content.offsetWidth + 20 )+'px';
+		    		components._close.style.marginLeft = '10px';
+		        break;
+		     case 'vertical-right':
+		    		//components.div_modal_content.style.margin = '0px 0px 0px auto';
+		    		components.div_modal_content.style.margin = settings.margin;
+
+			    	components._close.style.marginTop = '10px';
+		    		//components._close.style.right = (components.div_modal_content.offsetWidth + 20 )+'px';
+		    		components._close.style.right = '10px';
+		        break;
+		    case 'horizontal':
+		    case 'horizontal-top':
+		    		components.div_modal_content.style.marginTop = 0;
+
+		    		components._close.style.marginTop = (components.div_modal_content.offsetHeight + 20 )+'px';
+	    			components._close.style.right = '30px';
+		    	break;
+		    case 'horizontal-bottom':
+	    			components.div_modal_content.style.bottom = 0;
+
+		    		components._close.style.marginBottom = (components.div_modal_content.offsetHeight + 20 )+'px';
+	    			components._close.style.right = '30px';
+		    	break;
+
+		    default:
+					components.div_modal_content.style.transition = 'all '+settings.interval+'ms';
+					components.div_modal_content.style.width = settings.width;
+	    			components.div_modal_content.style.height = settings.height;
+	    			components.div_modal_content.style.margin = settings.margin;
+
+		    	break;
+		}
+	}, 200);
+}
+
+function default_style_makers (maker) 
+{
+	var text = maker.innerHTML;
+	var array_text = text.split(' ', text.length);
+
+	maker.style.position = 'fixed';
+	maker.style.top = '120px';
+	maker.style.fontWeight = '100';
+	maker.style.fontFamily = "'Roboto', sans-serif";
+	maker.style.fontSize = '16px';
+	//maker.style.backgroundColor = '#1abc9c';
+	maker.style.backgroundColor = maker.settings.btn.backgroundColor;
+	//maker.style.color = 'white !important';
+	maker.style.color = maker.settings.btn.textColor+' !important';
+	maker.style.border = 'none !important';
+	maker.style.cursor = 'pointer';
+	maker.style.zIndex = '999999';
+	maker.style.textDecoration = 'none';
+	maker.style.margin = '0';
+	maker.style.textAlign = 'left';
+	maker.style.boxSizing = 'border-box !important';
+	maker.style.padding = '0';
+	maker.innerHTML = '';
+
+	var p = document.createElement('p');
+            p.innerHTML = '<span style=" display: block; margin: 0; padding: 0; ">'+array_text[0]+'</span>'+((array_text[1] !== undefined) ? array_text[1] : '') + ' ' + ((array_text[2] !== undefined) ? array_text[2] : '');
+            p.style.padding = '10px';
+            p.style.margin = '0';
+            //p.style.color = 'white';
+            p.style.color = maker.settings.btn.textColor;
+            p.style.fontWeight = '100';
+            p.style.fontSize = '20px';
+            p.style.fontFamily = "'Roboto', sans-serif";
+            p.style.lineHeight = '24px';
+
+    var cnt = document.createElement('div');
+        cnt.style.position ='relative';
+        cnt.style.width = '120px';
+    
+    if (maker.settings.btn.showLogo != 'false') {
+        cnt.style.height = '100px';
+    }
+
+	var _before = document.createElement('div');
+            _before.style.position ='absolute';
+            _before.style.top ='20px';
+            _before.style.width ='0';
+            _before.style.height ='0';
+            _before.style.zIndex = '999999';
+
+	var img = document.createElement('img');
+            img.style.width = '100%';
+            img.style.border = 'none';
+            img.src = d +'/assets/images/embedded/logo.png';
+
+	var logo = document.createElement('div');
+            logo.style.backgroundColor = '#f8f8f8';
+            logo.style.textAlign = 'center';
+            logo.style.padding = '3px 6px';
+            logo.style.border = 'none';
+            logo.style.width = '100%';
+            logo.style.boxSizing = 'border-box';
+
+	if ( maker.settings.position == 'vertical' || maker.settings.position == 'vertical-left' ) {
+		maker.style.left = '10px';
+		_before.style.right ='auto';
+		_before.style.left ='-10px';
+		_before.style.borderTop ='8px solid transparent';
+		//_before.style.borderRight ='10px solid rgb(26, 188, 156)';
+		_before.style.borderRight ='10px solid '+maker.settings.btn.backgroundColor;
+		_before.style.borderBottom ='8px solid transparent';
+		_before.style.left ='-10px';
+	} else if ( maker.settings.position == 'mobile' ) {
+
+		cnt.style.width = '100%';
+		cnt.style.height = 'auto';
+		img.style.width = '50px';
+		p.style.fontSize = '14px';
+		p.style.padding = '5px';
+
+		maker.style.right = '6px';
+		_before.style.right ='-6px';
+		_before.style.borderTop ='4px solid transparent';
+		//_before.style.borderLeft ='6px solid rgb(26, 188, 156)';
+		_before.style.borderLeft ='6px solid '+maker.settings.btn.backgroundColor;
+		_before.style.borderBottom ='4px solid transparent';
+	} else if (maker.settings.position == 'mobile-left') {
+		cnt.style.width = '100%';
+		cnt.style.height = 'auto';
+		img.style.width = '50px';
+		p.style.fontSize = '14px';
+		p.style.padding = '5px';
+
+		maker.style.left = '6px';
+		_before.style.left ='-6px';
+		_before.style.borderTop ='4px solid transparent';
+		//_before.style.borderRight ='6px solid rgb(26, 188, 156)';
+		_before.style.borderRight ='6px solid '+maker.settings.btn.backgroundColor;
+		_before.style.borderBottom ='4px solid transparent';
+	} else {
+		maker.style.right = '10px';
+		_before.style.right ='-10px';
+		_before.style.borderTop ='8px solid transparent';
+		//_before.style.borderLeft ='10px solid rgb(26, 188, 156)';
+		_before.style.borderLeft ='10px solid '+maker.settings.btn.backgroundColor;
+		_before.style.borderBottom ='8px solid transparent';
+	}
+
+	cnt.insertBefore(_before,null);
+	cnt.appendChild(p);
+    
+    if (maker.settings.btn.showLogo != 'false') {
+        cnt.appendChild(logo);
+	    logo.appendChild(img);
+    }
+	maker.appendChild(cnt);
+	
+
+}})( window );

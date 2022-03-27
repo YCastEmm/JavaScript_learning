@@ -4,37 +4,67 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Calculadora de discos | X-28 Alarmas</title>
     <link rel="stylesheet" href="../css/calculadora.css">
 </head>
 
 
 
 <body>
+    <header>
+        <div>
+            <img src="../img/logo-color.svg" alt="" style="max-width: 80px; margin: 10px 50px;"> 
+        </div>
+        <div style="height: 100px; background: #004594;">
+            <h1>CALCULADORA PARA CÁMARAS</h1>
+        </div>
 
-    <div class="calculadora">
-        <p>Con la siguiente calculadora podés conocer la cantidad de discos necesarios en función de los días de grabación deseados y las cámaras a instalar.
-            <br>
-            También es posible calcular los días de grabación posibles en base a los discos y cámaras a instalar, o bien, saber la cantidad de cámaras que se pueden colocar, dada una cantidad de discos y los días de grabación.
-            <br>
-            <br>
-            Simplemente completá dos campos para calcular el tercero.
-        </p>
+    </header>
 
-        <form action="" id="calculadora" method="get">
-            <label for="">Cantidad de cámaras</label>
-            <input type="number" id="nCamaras">
+    <main style="background-color: #181818;">
+        <div class="calculadora">
+            <p>Con la siguiente calculadora podés conocer la cantidad de Terabytes necesarios en función de los días de grabación deseados y las cámaras a instalar.
+                <br>
+                También es posible calcular los días de grabación posibles en base a los discos y cámaras a instalar, o bien, saber la cantidad de cámaras que se pueden colocar, dada una cantidad de discos y los días de grabación.
+                <br>
+                <br>
+                Simplemente completá dos campos para calcular el tercero.
+            </p>
+
+            <form action="" id="calculadora" method="get">
+                <label for="">Cantidad de cámaras</label>
+                <input type="number" id="nCamaras">
+                
+                <label for="">Días de grabación</label>
+                <input type="number" id="diasGrabacion">
+
+                <label for="">Capacidad en Terabytes</label>
+                <input type="number" id="hdd">
+
+                <button type="button" onclick="calcular();">Calcular</button>
+
+            </form>
+        </div>
+    </main>
+
+
+    <footer>
+        <div id="derechos">
+            <p>© X-28 Alarmas — Todos los derechos reservados</p>
+        </div>
+
+        <div id="contacto">
+            <p style="font-size: 16px;"><b>Contacto</b></p>
+            <p>
+                Sede Central — Chascomús 5612, C.A.B.A. <br>
+                (C1440AQR) Buenos Aires <br>
+                (011) 4008-9100 <br>
+                info@x-28.com <br>
+            </p>
             
-            <label for="">Días de grabación</label>
-            <input type="number" id="diasGrabacion">
-
-            <label for="">Cantidad de discos</label>
-            <input type="number" id="hdd">
-
-            <button type="button" onclick="calcular();">Calcular</button>
-
-        </form>
-    </div>
+            
+        </div>
+    </footer>
     
     <script src="../js/calculadora.js" type="text/javascript"></script>
 
